@@ -1,0 +1,61 @@
+@page "/petstoredata/detailpetstore/{id}"
+
+@using BlazorServerDemo.Data
+@inject LocationService LocationServiceRepo
+@inject PetStoreService PetStoreServiceRepo
+
+@if (store != null)
+{
+    <div class="row">
+        <div class="col-lg-9">
+            <h1>PetStore Info</h1>
+        </div>
+        <div class="col-lg-3 text-right">
+            <a class="btn btn-secondary btn-sm" href="/petstoredata" role="button">Go Back To PetStore List</a>
+        </div>
+    </div>
+ 
+    <table class="table">
+        <tbody>
+        <tr>
+            <th scope="row">Store Id</th>
+            <td>@store.Id</td>
+        </tr>
+        <tr>
+            <th scope="row">Store Name</th>
+            <td>@store.StoreName</td>
+        </tr>
+        <tr>
+            <th scope="row">Year of Foundation</th>
+            <td>@store.FoundationYear</td>
+        </tr>
+        <tr>
+            <th scope="row">Location Data</th>
+            @if(location!=null)
+            {
+                <td>St. @location.StreetName No. @location.StreetNumber</td>
+            }
+            else
+            {
+                <td>There is not associated location info to show</td>
+            }
+        </tr>
+        </tbody>
+    </table>
+}
+@code
+{
+    [Parameter]
+    public string Id { get; set; }
+
+    private Location? location;
+    private PetStore? store;
+
+ 
+    protected override async Task OnInitializedAsync()
+    {
+        store = await PetStoreServiceRepo.GetPetStoreById(Id);
+
+        location = await LocationServiceRepo.GetLocationById(store.StoreLocationId);
+    }
+}

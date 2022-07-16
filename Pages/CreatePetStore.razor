@@ -1,0 +1,69 @@
+@page "/petstoredata/createpetstore"
+
+@using BlazorServerDemo.Data
+@inject PetStoreService PetStoreServiceRepo
+@inject LocationService LocationServiceRepo
+@inject NavigationManager MyNavigationManager;
+
+<div class="row">
+    <div class="col-lg-9">
+        <h1>Create</h1>
+    </div>
+    <div class="col-lg-3 text-right">
+        <a class="btn btn-secondary btn-sm" href="/petstoredata" role="button">Go Back To List</a>
+    </div>
+</div>
+ 
+@if (petStore != null)
+{
+    <EditForm Model=@petStore OnValidSubmit="@SubmitPetStore">
+        <div class="form-group">
+            <label>Store Name</label>
+            <InputText class="form-control" @bind-Value="petStore.StoreName" />
+        </div>
+        <div class="form-group">
+            <label>Year of Foundation</label>
+            <InputNumber class="form-control" @bind-Value="petStore.FoundationYear" />
+        </div>
+        <div class="form-group">
+            <label>Location</label>
+            <InputSelect @bind-Value="petStore.StoreLocationId" class="form-control">
+                @if (locations != null)
+                    {
+                    @foreach (var tmpLocation in locations)
+                        {
+                        <option value="@tmpLocation.Id">@tmpLocation.StreetName</option>
+                        }
+                    }
+            </InputSelect>
+        </div>
+        <div>
+            <br>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+    </EditForm>
+}
+
+@code {
+
+    public PetStore petStore;
+    private Location[] locations;
+
+    private async Task GetData()
+    {
+        locations = await LocationServiceRepo.GetLocationAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetData();
+        petStore = new PetStore();
+    }
+
+    protected async Task SubmitPetStore()
+    {
+        await PetStoreServiceRepo.SavePetStoreAsync(petStore);
+        MyNavigationManager.NavigateTo("/petstoredata");
+
+    }
+}
