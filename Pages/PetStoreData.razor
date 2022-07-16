@@ -1,0 +1,70 @@
+@page "/petstoredata"
+
+<PageTitle>Location Data from MongoDb</PageTitle>
+
+@using BlazorServerDemo.Data
+@inject PetStoreService PetStoreServiceRepo
+
+<h1>Pet Store</h1>
+
+<p>This component demonstrates fetching pet stores from a service that connects to a db.</p>
+<div class="row">
+    <div class="col-lg-9">
+        <h1>Pet Store</h1>
+    </div>
+    <div class="col-lg-3 text-right">
+        <a class="btn btn-success btn-sm" href="/petstore/createpetstore" role="button">Create New PetStore</a>
+    </div>
+</div>
+
+@if (petStore == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Year of Foundation</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tmpPetStore in petStore)
+            {
+                <tr>
+                    <td>@tmpPetStore.Id</td>
+                    <td>@tmpPetStore.StoreName</td>
+                    <td>@tmpPetStore.FoundationYear</td>
+                    <td class="text-right">
+                        <a class="btn btn-primary btn-sm" href="/petstore/detail/@tmpPetStore.Id" role="button">Details</a>
+                        <a class="btn btn-secondary btn-sm" href="/petstore/edit/@tmpPetStore.Id" role="button">Edit</a>
+                    <button class="btn btn-danger btn-sm" @onclick="@(e => DeletePetStore(tmpPetStore.Id))" role="button">Delete</button>
+                </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private PetStore[] petStore;
+
+    private async Task GetData()
+    {
+        petStore = await PetStoreServiceRepo.GetPetStoreAsync();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await GetData();
+    }
+
+    protected async Task DeletePetStore(string id)
+    {
+        await PetStoreServiceRepo.DeletePetStoreAsync(id);
+        await GetData();
+
+    }
+}
