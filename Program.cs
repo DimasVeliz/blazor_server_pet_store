@@ -22,6 +22,8 @@ builder.Services.AddSingleton(typeof(IMongoCRUD<>), typeof(MongoCRUD<>));
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton<LocationService>();
 builder.Services.AddSingleton<PetStoreService>();
+builder.Services.AddSingleton<ImageTestService>();
+
 
 
 

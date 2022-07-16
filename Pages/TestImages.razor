@@ -1,0 +1,35 @@
+@page "/testimages"
+
+@using BlazorServerDemo.Data
+@inject ImageTestService ImageTestServiceRepo
+
+@if(images!=null)
+{ 
+    @foreach(var imagen in images)
+    {   <div>    
+            <p>@imagen.ImageDescription</p>    
+            @if (imagen is not null)
+            {   string datab64=$"data:image/jpeg;base64,{imagen.Base64img}";
+                <a href="#"><img src="@datab64" asp-append-version="true" alt="" width="300px"></a>
+            }
+            else
+            {
+                <a href="#"><img src="https://via.placeholder.com/700x400" alt="" class="img-fluid mb20"></a>
+            }
+        </div>
+        <br>                    
+    }        
+ 
+}
+@code
+{
+    private ImageTest[]? images;
+    private async Task GetData()
+    {
+        images = await this.ImageTestServiceRepo.GetImageTestAsync();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await GetData();
+    }
+}
