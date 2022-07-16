@@ -1,0 +1,44 @@
+@page "/location/detail/{id}"
+@using BlazorServerDemo.Data
+@inject LocationService LocationServiceRepo
+
+@if (location != null)
+{
+    <div class="row">
+        <div class="col-lg-9">
+            <h1>Location Info</h1>
+        </div>
+        <div class="col-lg-3 text-right">
+            <a class="btn btn-secondary btn-sm" href="/locationdata" role="button">Go Back To Location List</a>
+        </div>
+    </div>
+ 
+    <table class="table">
+        <tbody>
+        <tr>
+            <th scope="row">Street Id</th>
+            <td>@location.Id</td>
+        </tr>
+        <tr>
+            <th scope="row">Street No</th>
+            <td>@location.StreetNumber</td>
+        </tr>
+        <tr>
+            <th scope="row">Street Name</th>
+            <td>@location.StreetName</td>
+        </tr>
+        </tbody>
+    </table>
+}
+@code
+{
+    [Parameter]
+    public string Id { get; set; }
+
+    private Location location;
+ 
+    protected override async Task OnInitializedAsync()
+    {
+        location = await LocationServiceRepo.GetLocationById(Id);
+    }
+}

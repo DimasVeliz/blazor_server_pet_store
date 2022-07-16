@@ -1,0 +1,70 @@
+﻿@page "/locationdata"
+
+<PageTitle>Location Data from MongoDb</PageTitle>
+
+@using BlazorServerDemo.Data
+@inject LocationService LocationServiceRepo
+
+<h1>Location</h1>
+
+<p>This component demonstrates fetching locations from a service that connects to a db.</p>
+<div class="row">
+    <div class="col-lg-9">
+        <h1>Location</h1>
+    </div>
+    <div class="col-lg-3 text-right">
+        <a class="btn btn-success btn-sm" href="/location/create" role="button">Create New Location</a>
+    </div>
+</div>
+
+@if (locations == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Number</th>
+                <th>StreetName</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tmpLocation in locations)
+            {
+                <tr>
+                    <td>@tmpLocation.Id</td>
+                    <td>@tmpLocation.StreetNumber</td>
+                    <td>@tmpLocation.StreetName</td>
+                    <td class="text-right">
+                        <a class="btn btn-primary btn-sm" href="/location/detail/@tmpLocation.Id" role="button">Details</a>
+                        <a class="btn btn-secondary btn-sm" href="/location/edit/@tmpLocation.Id" role="button">Edit</a>
+                    <button class="btn btn-danger btn-sm" @onclick="@(e => DeleteLocation(tmpLocation.Id))" role="button">Delete</button>
+                </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Location[] locations;
+
+    private async Task GetData()
+    {
+        locations = await LocationServiceRepo.GetLocationAsync();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await GetData();
+    }
+
+    protected async Task DeleteLocation(string id)
+    {
+        await LocationServiceRepo.DeleteLocationAsync(id);
+        await GetData();
+
+    }
+}
