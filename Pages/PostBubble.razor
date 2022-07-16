@@ -1,0 +1,70 @@
+@page "/postbubble"
+
+@using BlazorServerDemo.Data
+@inject LocationService LocationServiceRepo
+@inject PetStoreService PetStoreServiceRepo
+
+@if(imagesPath!=null)
+{ 
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+<div class="container mb80">
+    <div class="page-timeline">
+        @foreach(string? imagen in imagesPath)
+        {
+            <div class="vtimeline-point">
+                <div class="vtimeline-block">
+                    <a href="#"><h3>Standard post title</h3></a>
+                    <span class="vtimeline-date">June 25, 2020</span><div class="vtimeline-content">
+
+                        @if (imagen is not null)
+                        {
+                            <a href="#"><img src="@imagen" asp-append-version="true" alt="" width="300px"></a>
+                        }
+                        else
+                        {
+                             <a href="#"><img src="https://via.placeholder.com/700x400" alt="" class="img-fluid mb20"></a>
+                        }
+                        
+                        <ul class="post-meta list-inline">
+                            <li class="list-inline-item">
+                                <i class="fa fa-user-circle-o"></i> <a href="#">John Doe</a>
+                            </li>
+                            <li class="list-inline-item">
+                                <i class="fa fa-calendar-o"></i> <a href="#">25 June 2020</a>
+                            </li>
+                            <li class="list-inline-item">
+                                <i class="fa fa-tags"></i> <a href="#">Bootstrap4</a>
+                            </li>
+                        </ul>
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur in iaculis ex. Etiam volutpat laoreet urna. Morbi ut tortor nec nulla commodo malesuada sit amet vel lacus. Fusce eget efficitur libero. Morbi dapibus porta quam laoreet placerat.
+                        </p><br>
+                        <a href="#" class="btn btn-outline-secondary btn-sm">Read More</a>
+                    </div>
+                </div>
+            </div>
+            <br>
+        }
+        
+    </div>
+</div>
+}
+@code
+{
+    List<string> imagesPath;
+    private async Task GetData()
+    {
+        string static_dir = @"/wwwroot/images";
+        string imageDirectory = $"{Directory.GetCurrentDirectory()}{static_dir}";
+        var files = Directory.GetFiles(imageDirectory);
+        imagesPath = new List<string>();
+        foreach(var file in files)
+        {
+            imagesPath.Add("/images/"+Path.GetFileName(file));
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await GetData();
+    }
+}

@@ -49,4 +49,9 @@ public class LocationService
     {
         return await this.LocationRepo.GetById(id);
     }
+
+    public async Task UpdateLocationAsync(string id, Location entity)
+    {
+        await this.LocationRepo.Update(id,entity);
+    }
 }
