@@ -4,6 +4,9 @@
 
 <div>
     <div>
+        <button class="btn btn-danger" @onclick="Restart">Restart</button>
+    </div>
+    <div>
         <button class="btn btn-primary" @onclick="SolveMaze">Solve MAze</button>
     </div>
     <div>
@@ -14,7 +17,7 @@
             {
                 <Square 
                     @key=times 
-                    value=values[times] 
+                    value=@values[times] 
                     ClickHandler="@(() => HandleClick(times))" 
                 />
             }
@@ -28,14 +31,19 @@
 @code {
     Pair start;
     Pair end;
-    private char[] values;
+    private string?[] values;
     private bool [,] walls = new bool[9,9];
     private int [,] steps = new int[9,9];
+
+    private void Restart()
+    {
+        OnInitialized();
+    }
     
     protected override void OnInitialized()
     {
         values = Enumerable.Range(0,81)
-                            .Select(_=>' ')
+                            .Select(_=>" ")
                             .ToArray();
         for(int i =0; i<9; i++)
             for(int j =0; j<9; j++)
@@ -47,7 +55,7 @@
         int column = 0;
         for(int i = 0; i< values.Length;i++)
         {   
-            bool cellContent = values[i]=='X'?false:true;
+            bool cellContent = values[i]=="X"?false:true;
             column = i%9;
             if(i%9==0){row++;}
             walls[row,column]=cellContent;
@@ -55,8 +63,8 @@
     }
     private async Task SolveMaze()
     {
-        bool isStartPresent = values.Contains('S');
-        bool isEndPresent = values.Contains('E');
+        bool isStartPresent = values.Contains("S");
+        bool isEndPresent = values.Contains("E");
 
         if( !isStartPresent&& !isEndPresent)
         {
@@ -131,34 +139,34 @@
          for(int i =0; i<9; i++)
             for(int j =0; j<9; j++)
                 {
-                    if(values[index]!='S' && values[index]!='E' && values[index]!='X')
-                        values[index] = (char)(steps[i,j]+48);
+                    if(values[index]!="S" && values[index]!="E" && values[index]!="X")
+                        values[index] = steps[i,j].ToString();
                     
                     index++;
                 }
     }
 
-    private char NextSymbolOfCurrent(char current)
+    private string? NextSymbolOfCurrent(string? current)
     {
-        if(current==' ') return 'X';
-        if(current=='X') return 'S';
-        if(current=='S') return 'E';
-        if(current=='E') return ' ';
+        if(current==" ") return "X";
+        if(current=="X") return "S";
+        if(current=="S") return "E";
+        if(current=="E") return " ";
 
-        return '-';
+        return "-";
 
     }
-    private char StartAndEndLogic(char nextSymbol, char currentSymbol)
+    private string? StartAndEndLogic(string? nextSymbol, string? currentSymbol)
     {
-        bool isStartSet = values.Any(v =>v=='S');
-        bool isEndSet = values.Any(v =>v=='E');
+        bool isStartSet = values.Any(v =>v=="S");
+        bool isEndSet = values.Any(v =>v=="E");
 
         if(isStartSet && isEndSet)
         {
-            return currentSymbol==' '?'X':' ';
+            return currentSymbol==" "?"X":" ";
         }
 
-        if((isStartSet&&nextSymbol=='S') || (isEndSet&&nextSymbol=='E'))
+        if((isStartSet&&nextSymbol=="S") || (isEndSet&&nextSymbol=="E"))
             return NextSymbolOfCurrent(nextSymbol);
 
         return nextSymbol;
@@ -166,13 +174,13 @@
     }
     private void HandleClick(int i)
     {
-        char currentSymbol = values[i];
-        char nextSymbol=NextSymbolOfCurrent(values[i]);
+        string? currentSymbol = values[i];
+        string? nextSymbol=NextSymbolOfCurrent(values[i]);
         
         values[i] = StartAndEndLogic(nextSymbol,currentSymbol);
 
-        if(values[i]=='S') SetStart(i);
-        if(values[i]=='E') SetEnd(i);
+        if(values[i]=="S") SetStart(i);
+        if(values[i]=="E") SetEnd(i);
 
         UpdateMatrix();
     }
