@@ -1,0 +1,203 @@
+@using System.Collections.Generic;
+@inject IJSRuntime JsRuntime
+@using BlazorServerDemo.Data
+
+<div>
+    <div>
+        <button class="btn btn-primary" @onclick="SolveMaze">Solve MAze</button>
+    </div>
+    <div>
+        <div>
+            <div class="board">
+
+            @foreach(var times in Enumerable.Range(0,81))
+            {
+                <Square 
+                    @key=times 
+                    value=values[times] 
+                    ClickHandler="@(() => HandleClick(times))" 
+                />
+            }
+            </div>
+        </div>
+        <br/>
+    </div>
+    
+</div>
+
+@code {
+    Pair start;
+    Pair end;
+    private char[] values;
+    private bool [,] walls = new bool[9,9];
+    private int [,] steps = new int[9,9];
+    
+    protected override void OnInitialized()
+    {
+        values = Enumerable.Range(0,81)
+                            .Select(_=>' ')
+                            .ToArray();
+        for(int i =0; i<9; i++)
+            for(int j =0; j<9; j++)
+                steps[i,j] = -1;
+    }
+    private void UpdateMatrix()
+    {
+        int row =-1;
+        int column = 0;
+        for(int i = 0; i< values.Length;i++)
+        {   
+            bool cellContent = values[i]=='X'?false:true;
+            column = i%9;
+            if(i%9==0){row++;}
+            walls[row,column]=cellContent;
+        }
+    }
+    private async Task SolveMaze()
+    {
+        bool isStartPresent = values.Contains('S');
+        bool isEndPresent = values.Contains('E');
+
+        if( !isStartPresent&& !isEndPresent)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Both End and Start should be present");
+        }
+        else if(!isStartPresent)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Start should be present");
+
+        }
+        else if(!isEndPresent)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "End should be present");
+
+        }
+        else
+        {
+            SolveMazeBFS();
+        }
+    }
+
+    public void SolveMazeBFS()
+    {
+
+        //Save Result of Bfs
+        bool isSolvable = BFS();
+
+        if(isSolvable)
+            updateGraphicBoad();
+    }
+    private bool BFS()
+    {
+        int [] dRow = {-1, 0, 1, 0};
+        int [] dCol = {0, 1, 0, -1};
+        Queue<Pair> queue = new Queue<Pair>();
+        queue.Enqueue(start);
+        steps[start.Row,start.Col]=0;
+
+        while(queue.Count>0)
+        {
+            Pair tmp = queue.Dequeue();
+            if(tmp.Equals(end)) return true;
+
+            for(int i=0;i<dRow.Length;i++)
+            {
+                int newCol =tmp.Col +dCol[i];
+                int newRow =tmp.Row + dRow[i];
+                if(InRange(newRow,newCol))
+                {
+                    //false in walls mean unable to pass
+                    //-1 steps means didnt step there
+                    if(walls[newRow,newCol]&&steps[newRow,newCol]==-1)
+                    {
+                        Pair nextChild = new Pair(newRow,newCol);
+                        steps[newRow,newCol] = steps[tmp.Row,tmp.Col]+1;
+                        queue.Enqueue(nextChild);
+
+                    }
+                } 
+                   
+            }
+        }
+        return false;
+    }
+    private bool InRange(int r, int c)
+    {
+        return r>= 0 && r<9 && c>=0 && c<9;
+    }
+    private void updateGraphicBoad()
+    {
+        int index =0;
+         for(int i =0; i<9; i++)
+            for(int j =0; j<9; j++)
+                {
+                    if(values[index]!='S' && values[index]!='E' && values[index]!='X')
+                        values[index] = (char)(steps[i,j]+48);
+                    
+                    index++;
+                }
+    }
+
+    private char NextSymbolOfCurrent(char current)
+    {
+        if(current==' ') return 'X';
+        if(current=='X') return 'S';
+        if(current=='S') return 'E';
+        if(current=='E') return ' ';
+
+        return '-';
+
+    }
+    private char StartAndEndLogic(char nextSymbol, char currentSymbol)
+    {
+        bool isStartSet = values.Any(v =>v=='S');
+        bool isEndSet = values.Any(v =>v=='E');
+
+        if(isStartSet && isEndSet)
+        {
+            return currentSymbol==' '?'X':' ';
+        }
+
+        if((isStartSet&&nextSymbol=='S') || (isEndSet&&nextSymbol=='E'))
+            return NextSymbolOfCurrent(nextSymbol);
+
+        return nextSymbol;
+
+    }
+    private void HandleClick(int i)
+    {
+        char currentSymbol = values[i];
+        char nextSymbol=NextSymbolOfCurrent(values[i]);
+        
+        values[i] = StartAndEndLogic(nextSymbol,currentSymbol);
+
+        if(values[i]=='S') SetStart(i);
+        if(values[i]=='E') SetEnd(i);
+
+        UpdateMatrix();
+    }
+
+    private void SetStart(int i)
+    {
+        int row = i/9;
+        int col = i%9;
+        start = new Pair(row,col);
+    }
+    private void SetEnd(int i)
+    {
+        int row = i/9;
+        int col = i%9;
+        end = new Pair(row,col);
+    }
+}
+<style scoped>
+    .board {
+        display: grid;
+        grid-template-columns: auto auto auto auto auto auto auto auto auto;
+        background-color: #0a8efa;
+        padding: 10px;
+        width: 200px;
+        height: 200px;
+        border-radius: 10%;
+    }
+</style>
